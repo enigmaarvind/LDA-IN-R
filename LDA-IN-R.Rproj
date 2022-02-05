@@ -1,0 +1,28 @@
+library(MASS)
+library("tidyverse")
+data("iris")
+iris  <- as.tibble(iris)
+iris
+ggplot(iris, aes(Sepal.Length, Sepal.Width, col = Species)) + geom_point()
+# There definitely seems to be separation between setosa and the rest... It's harder to see an obvious separation between versicolor and virginia.
+
+# We will now fit LDA:
+iris.lda  <- lda(Species ~ Sepal.Length + Sepal.Width, data = iris)
+attributes(iris.lda)
+
+# LDA will give us boundaries that will separate the grid of Sepal Length and Sepal Width to give us the class. 
+# The best way to illustrate this is by using the LDA model to predict over a grid.
+sepal.grid  <- expand.grid(Sepal.Length = seq(4,8,length = 100), 
+                           Sepal.Width = seq(2,4.5,length = 100))
+sepal.grid  <- as.tibble(sepal.grid)
+sepal.grid
+
+# Next, we use our model to predict the Species for each point in the grid:
+
+sepal.grid$Species  <- predict(iris.lda,sepal.grid)$class
+sepal.grid
+
+# Finally, we plot the grid and the observations:
+ggplot(sepal.grid, aes(Sepal.Length, Sepal.Width, fill = Species)) + 
+  geom_tile(alpha = 0.2) + 
+  geom_point(data = iris, aes(col = Species, fill = NA))
